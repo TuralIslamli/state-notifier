@@ -1,10 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:statenotifertest/posts_model.dart';
 import 'package:statenotifertest/providers.dart';
-import 'package:statenotifertest/services/api_services.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -12,27 +8,35 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dataRef = ref.read(postsNotifierProvider.notifier);
-    Future<List<Post>> postApi = getPosts();
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          ref.watch(postsNotifierProvider.notifier).reversePost();
+        },
+        child: const Text("reverse"),
+      ),
       body: FutureBuilder(
-          future: postApi,
+          future: dataRef.getPosts(),
           builder: (context, snapshot) => snapshot.hasData
               ? ListView.builder(
                   itemCount: snapshot.data!.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
+                      leading: Text(snapshot.data![index].id.toString()),
                       title: Text(snapshot.data![index].title!),
                       subtitle: Text(snapshot.data![index].body!),
                       trailing: IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () {
-                          dataRef.delPosts(snapshot.data![index].id!);
+                          ref
+                              .watch(postsNotifierProvider.notifier)
+                              .delPosts(snapshot.data![index].id!);
                         },
                       ),
                     );
                   },
                 )
-              : CircularProgressIndicator()),
+              : const CircularProgressIndicator()),
     );
   }
 }
